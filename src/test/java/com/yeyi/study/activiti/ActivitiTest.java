@@ -12,7 +12,6 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
-import org.activiti.validation.validator.impl.SequenceflowValidator;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Test;
@@ -24,13 +23,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -48,6 +44,8 @@ public class ActivitiTest {
     private ProcessEngineConfiguration processEngineConfiguration;
     @Autowired
     private SqlSessionFactory sqlSessionFactory;
+    @Autowired
+    private BpmnExpressionGenerator expressionGenerator;
 
 
     @Test
@@ -115,22 +113,11 @@ public class ActivitiTest {
 
         List<UserTask> userTasks = process.findFlowElementsOfType(UserTask.class);
 
-        Function<String, String> assignee = userTaskId -> "${" + userTaskId + "-user}";
-
-        Function<String, String> flowConditionKey = userTaskId -> userTaskId + "-flow";
-
-        BiFunction<String, String, String> flowCondition = (userTaskId, flowId) -> "${"+flowConditionKey.apply(userTaskId)+"='"+flowId+"'}";
-
         for (UserTask userTask : userTasks) {
             String userTaskId = userTask.getId();
-            userTask.setAssignee(assignee.apply(userTaskId));
+            userTask.setAssignee(expressionGenerator.assigneeExpression(userTaskId));
 
-            if (userTask.getOutgoingFlows().size() > 1) {
-                List<SequenceFlow> flows = findOutgoingFlows(userTask);
-                for (SequenceFlow flow : flows) {
-                    flow.setConditionExpression(flowCondition.apply(userTaskId, flow.getId()));
-                }
-            }
+            setFlowExpression(userTask);
         }
 
         System.out.println(process);
@@ -143,18 +130,20 @@ public class ActivitiTest {
 
     }
 
-    private List<SequenceFlow> findOutgoingFlows(FlowNode node) {
-        List<SequenceFlow> list = new ArrayList<>();
-        for (SequenceFlow flow : node.getOutgoingFlows()) {
-            FlowElement target = flow.getTargetFlowElement();
-            if (target instanceof UserTask) {
-                list.add(flow);
-            } else if (target instanceof ExclusiveGateway) {
-                list.addAll(findOutgoingFlows((ExclusiveGateway) target));
+    private void setFlowExpression(FlowNode node) {
+        List<SequenceFlow> flows = node.getOutgoingFlows();
+        if (flows.size() > 1) {
+            for (SequenceFlow flow : flows) {
+                flow.setConditionExpression(expressionGenerator.flowCondition(node.getId(), flow.getId()));
+                FlowElement target = flow.getTargetFlowElement();
+                if (target instanceof UserTask) {
+                    continue;
+                }
+                setFlowExpression((FlowNode) target);
             }
         }
-        return list;
     }
+
 
     @Test
     public void findTasksByUserId() {

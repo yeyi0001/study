@@ -29,6 +29,9 @@ spring:
         database-schema-update: true #自动更新数据库结构
         process-definition-location-prefix: classpath:/processes/ #流程定义文件存放目录
 
+
 ## 该配置节点为独立的节点，有很多同学容易将这个配置放在spring的节点下，导致配置无法被识别
 mybatis:
   mapper-locations: classpath:mapping/*.xml  #注意：一定要对应mapper映射xml文件的所在路径
+logging:
+  level.org.activiti.engine.impl.persistence.entity: debug

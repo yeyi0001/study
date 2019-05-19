@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
-  <process id="report" name="My process" isExecutable="true">
+  <process id="report" name="报备流程" isExecutable="true">
     <startEvent id="startevent1" name="Start"></startEvent>
-    <endEvent id="endevent1" name="End"></endEvent>
-    <userTask id="usertask1" name="申请" activiti:assignee="${usertask1-assignee}"></userTask>
+    <endEvent id="endevent1" name="办结"></endEvent>
+    <userTask id="usertask1" name="申请" activiti:assignee="${usertask1_user}"></userTask>
     <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="usertask1"></sequenceFlow>
-    <userTask id="usertask2" name="领导审批" activiti:assignee="${usertask2-assignee}"></userTask>
-    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="usertask2"></sequenceFlow>
-    <sequenceFlow id="flow3" sourceRef="usertask2" targetRef="endevent1"></sequenceFlow>
-    <userTask id="usertask3" name="其他人员审批" activiti:assignee="${usertask3-assignee}"></userTask>
-    <sequenceFlow id="flow4" sourceRef="usertask1" targetRef="usertask3"></sequenceFlow>
-    <sequenceFlow id="flow5" sourceRef="usertask3" targetRef="usertask2"></sequenceFlow>
+    <userTask id="usertask2" name="领导审批" activiti:assignee="${usertask2_user}"></userTask>
+    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="usertask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask1_flow=='flow2'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="usertask2" targetRef="endevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask2_flow=='flow3'}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="usertask3" name="其他人员审批" activiti:assignee="${usertask3_user}"></userTask>
+    <sequenceFlow id="flow4" sourceRef="usertask1" targetRef="usertask3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask1_flow=='flow4'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="usertask3" targetRef="usertask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask3_flow=='flow5'}]]></conditionExpression>
+    </sequenceFlow>
     <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
-    <sequenceFlow id="flow6" sourceRef="usertask3" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="flow6" sourceRef="usertask3" targetRef="exclusivegateway1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask3_flow=='flow6'}]]></conditionExpression>
+    </sequenceFlow>
     <sequenceFlow id="flow7" sourceRef="exclusivegateway1" targetRef="usertask3"></sequenceFlow>
-    <sequenceFlow id="flow8" name="退回" sourceRef="usertask3" targetRef="usertask1"></sequenceFlow>
-    <sequenceFlow id="flow9" name="退回" sourceRef="usertask2" targetRef="usertask1"></sequenceFlow>
+    <sequenceFlow id="flow8" name="退回" sourceRef="usertask3" targetRef="usertask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask3_flow=='flow8'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow9" name="退回" sourceRef="usertask2" targetRef="usertask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${usertask2_flow=='flow9'}]]></conditionExpression>
+    </sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_report">
     <bpmndi:BPMNPlane bpmnElement="report" id="BPMNPlane_report">
@@ -72,7 +86,7 @@
         <omgdi:waypoint x="328.0" y="347.0"></omgdi:waypoint>
         <omgdi:waypoint x="328.0" y="215.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="100.0" x="284.0" y="305.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="24.0" x="284.0" y="305.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
@@ -81,7 +95,7 @@
         <omgdi:waypoint x="328.0" y="108.0"></omgdi:waypoint>
         <omgdi:waypoint x="328.0" y="160.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="100.0" x="460.0" y="91.0"></omgdc:Bounds>
+          <omgdc:Bounds height="14.0" width="24.0" x="460.0" y="91.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
